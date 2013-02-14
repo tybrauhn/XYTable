@@ -11,7 +11,6 @@
  */
  
  #include <LiquidCrystal.h>
- #include <Encoder.h>
  
  // function prototypes
  void CheckButtons(void);
@@ -19,31 +18,33 @@
  void ZeroPosition(void);
  void MoveToTarget(void);
  void StepSizeMeasurementRoutine(void);
+ void CheckRightEncoder(void);
+ void CheckLeftEncoder(void);
  
  // Set up all pins
- int motor_X_step_pin = 20;
- int motor_X_dir_pin = 21;
- int motor_Y_step_pin = 4;
- int motor_Y_dir_pin = 5;
- int motor_Z_step_pin = 0;
- int motor_Z_dir_pin = 0; 
- int up_pin = 7;
- int down_pin = 9;
- int left_pin = 10;
- int right_pin = 12;
- LiquidCrystal lcd(19,18,17,16,15,14);
- int left_encoder_pin_a = 2; //A0 //should be interrupt
- int left_encoder_pin_b = 55; //A1
- int right_encoder_pin_a = 3; //A2 //should be interrupt
- int right_encoder_pin_b = 57; //A3
+ int motor_X_step_pin = 29;
+ int motor_X_dir_pin = 28;
+ int motor_Y_step_pin = 27;
+ int motor_Y_dir_pin = 26;
+ int motor_Z_step_pin = 23;
+ int motor_Z_dir_pin = 22; 
+ int up_pin = 6;
+ int down_pin = 7;
+ int left_pin = 8;
+ int right_pin = 5;
+ LiquidCrystal lcd(13,14,16,17,20,21);
+ int left_encoder_pin_a = 10; //should be interrupt 0
+ int left_encoder_pin_b = 9; 
+ int right_encoder_pin_a = 11; //should be interrupt 1
+ int right_encoder_pin_b = 12; 
  
  // Set up global variables
  int motorXSteps = 50; //steps per revolution of the motor
  int motorYSteps = 200;
- int motorZSteps = 200; 
+ int motorZSteps = 50; 
  int motorXSpeed = 600; //stepper motor speed in RPM
  int motorYSpeed = 800;
- int motorZSpeed = 500;
+ int motorZSpeed = 600;
  float XInchesPer100Steps = .17; //inches of total table travel per 100 motor steps
  float YInchesPer100Steps = .03;
  float ZInchesPer100Steps = .03; 
@@ -89,10 +90,6 @@
  int YStepFlag = 0;
  int ZStepFlag = 0;
  unsigned long waitStart = 0;
- 
- // create encoder objects
- Encoder lEncoder(left_encoder_pin_a,left_encoder_pin_b);
- Encoder rEncoder(right_encoder_pin_a,right_encoder_pin_b);
  
 void setup() {
   
@@ -146,6 +143,20 @@ void setup() {
   pinMode(motor_Z_dir_pin, OUTPUT);
   digitalWrite(motor_Z_dir_pin, LOW);
   
+  // set up encoder pin modes
+  pinMode(left_encoder_pin_a, INPUT);
+  digitalWrite(left_encoder_pin_a, HIGH);
+  pinMode(left_encoder_pin_b, INPUT);
+  digitalWrite(left_encoder_pin_b, HIGH);
+  pinMode(right_encoder_pin_a, INPUT);
+  digitalWrite(right_encoder_pin_a, HIGH);
+  pinMode(right_encoder_pin_b, INPUT);
+  digitalWrite(right_encoder_pin_b, HIGH);
+  
+  // attach the interrupts for encoder read (L-D10, R-D11)
+  attachInterrupt(0,CheckLeftEncoder,RISING);
+  attachInterrupt(1,CheckRightEncoder,RISING); 
+  
   // set up the LCD's number of columns and rows
   lcd.begin(16,2);
   lcd.clear();
@@ -163,8 +174,6 @@ void loop (){
     }
     
   // check for encoder rotation
-    lEncoderCount = lEncoder.read();
-    rEncoderCount = rEncoder.read();
     
   // set x and y target step (possibly done in read pot positions and or encoder check)
     XTargetStep = lEncoderCount;
@@ -265,8 +274,8 @@ void LCDUpdate(){
 }
   
 void ZeroPosition(){
-  lEncoder.write(0);
-  rEncoder.write(0);
+  //lEncoder.write(0);
+  //rEncoder.write(0);
   ZTargetStep = 0;
   XCurrentStep = 0;
   YCurrentStep = 0;
@@ -459,7 +468,35 @@ void StepSizeMeasurementRoutine(){
      delay(2000);
 }
 
+void CheckLeftEncoder(){
+  if (digitalRead(left_encoder_pin_a)==digitalRead(left_encoder_pin_b)){
+    lEncoderCount++;
+  }
+  else {
+    lEncoderCount--;
+  }
+}
+
+void CheckRightEncoder(){
+  if (digitalRead(right_encoder_pin_a)==digitalRead(right_encoder_pin_b)){
+    rEncoderCount++;
+  }
+  else {
+    rEncoderCount--;
+  }  
+}
+
 /* 
+   Modified 27JAN13
+   by Tyler Brauhn
+   * Removed use of Encoder library 
+   * Added interrupts on pins 10 and 11
+   * Added functions CheckLeftEncoder and CheckRightEncoder
+   
+   Modified 06JAN13
+   by Tyler Brauhn
+   * Changed pins to use RepRap Gen 7 board
+   
    Modified 29DEC12
    by Tyler Brauhn
    * Add variables and routines for z-axis
