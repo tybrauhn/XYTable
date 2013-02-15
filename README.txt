@@ -1,10 +1,18 @@
 XYTable Readme
 Tyler Brauhn
-21NOV12
+Created 21NOV12
+
+Updated 14FEB13
 
 Function
 
-This will provide a platform that can move in the x and y directions controlled by an encoder for each direction. An LCD screen will display an indicator when a button is pressed and will give a readout in inches of the current position compared to the original position. The readout can be "zeroed" by resetting the control board.
+This will provide a platform that can move in the x, y, and z directions controlled by an encoder for each direction. An LCD screen will display the target and current positions for each axis.
+Pressing the "right" button moves the table to 
+the target position. One of two encoder knobs 
+controls each x and y axis target positions. 
+Pressing the up and down buttons adjusts the z 
+target position. The display can be "zeroed" by 
+resetting the control board.
 
 Purpose
 
@@ -17,11 +25,11 @@ The main hardware is constructed from two old flatbed scanners (purchased at Goo
 Configuration
 
 The following variables will need to be configured based on each individual construction:
-1. Pin assignments when using something other than Arduino Mega 2560/ADK
+1. Pin assignments when using something other than the RepRap Gen7 1.4.1.
 1. The number of steps per rotation for each motor
 2. The maximum speed of each motor (currently restricted by slow code)
 3. The total inches of movement of the platform per 100 steps of each motor
 
 Libraries 
 
-This code uses two libraries: LiquidCrystal included with the Arduino IDE and Encoder by Paul Stoffregen. The latter can be downloaded here: http://www.pjrc.com/teensy/td_libs_Encoder.html.
+This code uses only one library: LiquidCrystal included with the Arduino IDE.
